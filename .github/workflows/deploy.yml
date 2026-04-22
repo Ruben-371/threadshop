@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 env:
-  REGISTRY: ghcr.io/${{ github.repository_owner }}
+  REGISTRY: ghcr.io/ruben-371
 
 jobs:
   # ──────────────────────────────────────────
