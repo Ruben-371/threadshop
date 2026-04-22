@@ -39,6 +39,8 @@ spec:
       labels:
         app: users-service
     spec:
+      imagePullSecrets:
+      - name: ghcr-secret
       containers:
       - name: users-service
         image: {{ $registry }}/users-service:{{ $tag }}
@@ -101,6 +103,8 @@ spec:
       labels:
         app: catalog-service
     spec:
+      imagePullSecrets:
+      - name: ghcr-secret
       containers:
       - name: catalog-service
         image: {{ $registry }}/catalog-service:{{ $tag }}
@@ -158,6 +162,8 @@ spec:
       labels:
         app: payments-service
     spec:
+      imagePullSecrets:
+      - name: ghcr-secret
       containers:
       - name: payments-service
         image: {{ $registry }}/payments-service:{{ $tag }}
@@ -215,6 +221,8 @@ spec:
       labels:
         app: frontend
     spec:
+      imagePullSecrets:
+      - name: ghcr-secret
       containers:
       - name: frontend
         image: {{ $registry }}/frontend:{{ $tag }}
