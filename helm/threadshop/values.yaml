@@ -1,5 +1,5 @@
 global:
-  registry: registry.digitalocean.com/YOUR_REGISTRY
+  registry: registry.digitalocean.com/threadshop-registry
   imageTag: latest
 
 replicaCount: 2
