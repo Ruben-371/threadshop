@@ -2,13 +2,6 @@
 {{- $tag := .Values.global.imageTag }}
 
 ---
-# ── NAMESPACE ──────────────────────────────
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: threadshop
-
----
 # ── SECRETS ────────────────────────────────
 apiVersion: v1
 kind: Secret
