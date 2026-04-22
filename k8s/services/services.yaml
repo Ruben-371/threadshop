@@ -1,0 +1,55 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: users-service
+  namespace: threadshop
+spec:
+  selector:
+    app: users-service
+  ports:
+  - protocol: TCP
+    port: 3001
+    targetPort: 3001
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: catalog-service
+  namespace: threadshop
+spec:
+  selector:
+    app: catalog-service
+  ports:
+  - protocol: TCP
+    port: 3002
+    targetPort: 3002
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: payments-service
+  namespace: threadshop
+spec:
+  selector:
+    app: payments-service
+  ports:
+  - protocol: TCP
+    port: 3003
+    targetPort: 3003
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  namespace: threadshop
+spec:
+  selector:
+    app: frontend
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+  type: LoadBalancer

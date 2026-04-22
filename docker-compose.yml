@@ -1,0 +1,83 @@
+version: '3.8'
+
+services:
+  # Databases
+  postgres-users:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: users_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_users_data:/var/lib/postgresql/data
+
+  postgres-payments:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: payments_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_payments_data:/var/lib/postgresql/data
+
+  mongodb:
+    image: mongo:7-jammy
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  # Microservices
+  users-service:
+    build: ./services/users-service
+    ports:
+      - "3001:3001"
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres-users:5432/users_db
+      JWT_SECRET: threadshop-dev-secret
+      PORT: 3001
+    depends_on:
+      - postgres-users
+
+  catalog-service:
+    build: ./services/catalog-service
+    ports:
+      - "3002:3002"
+    environment:
+      MONGO_URI: mongodb://mongodb:27017/catalog_db
+      PORT: 3002
+    depends_on:
+      - mongodb
+
+  payments-service:
+    build: ./services/payments-service
+    ports:
+      - "3003:3003"
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres-payments:5432/payments_db
+      PORT: 3003
+    depends_on:
+      - postgres-payments
+
+  # Frontend
+  frontend:
+    build: ./frontend
+    ports:
+      - "80:80"
+    environment:
+      REACT_APP_USERS_URL: http://localhost:3001
+      REACT_APP_CATALOG_URL: http://localhost:3002
+      REACT_APP_PAYMENTS_URL: http://localhost:3003
+    depends_on:
+      - users-service
+      - catalog-service
+      - payments-service
+
+volumes:
+  postgres_users_data:
+  postgres_payments_data:
+  mongo_data:

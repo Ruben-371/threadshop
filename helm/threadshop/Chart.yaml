@@ -1,0 +1,6 @@
+apiVersion: v2
+name: threadshop
+description: ThreadShop Microservices - Fashion eCommerce
+type: application
+version: 1.0.0
+appVersion: "1.0.0"

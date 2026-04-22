@@ -1,0 +1,29 @@
+global:
+  registry: registry.digitalocean.com/YOUR_REGISTRY
+  imageTag: latest
+
+replicaCount: 2
+
+services:
+  users:
+    port: 3001
+  catalog:
+    port: 3002
+  payments:
+    port: 3003
+  frontend:
+    port: 80
+
+secrets:
+  usersDbUrl: ""
+  paymentsDbUrl: ""
+  mongoUri: ""
+  jwtSecret: ""
+
+resources:
+  requests:
+    memory: "64Mi"
+    cpu: "50m"
+  limits:
+    memory: "128Mi"
+    cpu: "200m"

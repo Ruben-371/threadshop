@@ -1,0 +1,242 @@
+{{- $registry := .Values.global.registry }}
+{{- $tag := .Values.global.imageTag }}
+
+---
+# ── NAMESPACE ──────────────────────────────
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: threadshop
+
+---
+# ── SECRETS ────────────────────────────────
+apiVersion: v1
+kind: Secret
+metadata:
+  name: threadshop-secrets
+  namespace: threadshop
+type: Opaque
+stringData:
+  users-db-url: {{ .Values.secrets.usersDbUrl | quote }}
+  payments-db-url: {{ .Values.secrets.paymentsDbUrl | quote }}
+  mongo-uri: {{ .Values.secrets.mongoUri | quote }}
+  jwt-secret: {{ .Values.secrets.jwtSecret | quote }}
+
+---
+# ── USERS SERVICE ──────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: users-service
+  namespace: threadshop
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: users-service
+  template:
+    metadata:
+      labels:
+        app: users-service
+    spec:
+      containers:
+      - name: users-service
+        image: {{ $registry }}/users-service:{{ $tag }}
+        ports:
+        - containerPort: {{ .Values.services.users.port }}
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: threadshop-secrets
+              key: users-db-url
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: threadshop-secrets
+              key: jwt-secret
+        - name: PORT
+          value: {{ .Values.services.users.port | quote }}
+        resources:
+          requests:
+            memory: {{ .Values.resources.requests.memory }}
+            cpu: {{ .Values.resources.requests.cpu }}
+          limits:
+            memory: {{ .Values.resources.limits.memory }}
+            cpu: {{ .Values.resources.limits.cpu }}
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: {{ .Values.services.users.port }}
+          initialDelaySeconds: 15
+          periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: users-service
+  namespace: threadshop
+spec:
+  selector:
+    app: users-service
+  ports:
+  - port: {{ .Values.services.users.port }}
+    targetPort: {{ .Values.services.users.port }}
+  type: ClusterIP
+
+---
+# ── CATALOG SERVICE ────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: catalog-service
+  namespace: threadshop
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: catalog-service
+  template:
+    metadata:
+      labels:
+        app: catalog-service
+    spec:
+      containers:
+      - name: catalog-service
+        image: {{ $registry }}/catalog-service:{{ $tag }}
+        ports:
+        - containerPort: {{ .Values.services.catalog.port }}
+        env:
+        - name: MONGO_URI
+          valueFrom:
+            secretKeyRef:
+              name: threadshop-secrets
+              key: mongo-uri
+        - name: PORT
+          value: {{ .Values.services.catalog.port | quote }}
+        resources:
+          requests:
+            memory: {{ .Values.resources.requests.memory }}
+            cpu: {{ .Values.resources.requests.cpu }}
+          limits:
+            memory: {{ .Values.resources.limits.memory }}
+            cpu: {{ .Values.resources.limits.cpu }}
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: {{ .Values.services.catalog.port }}
+          initialDelaySeconds: 20
+          periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: catalog-service
+  namespace: threadshop
+spec:
+  selector:
+    app: catalog-service
+  ports:
+  - port: {{ .Values.services.catalog.port }}
+    targetPort: {{ .Values.services.catalog.port }}
+  type: ClusterIP
+
+---
+# ── PAYMENTS SERVICE ───────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payments-service
+  namespace: threadshop
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: payments-service
+  template:
+    metadata:
+      labels:
+        app: payments-service
+    spec:
+      containers:
+      - name: payments-service
+        image: {{ $registry }}/payments-service:{{ $tag }}
+        ports:
+        - containerPort: {{ .Values.services.payments.port }}
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: threadshop-secrets
+              key: payments-db-url
+        - name: PORT
+          value: {{ .Values.services.payments.port | quote }}
+        resources:
+          requests:
+            memory: {{ .Values.resources.requests.memory }}
+            cpu: {{ .Values.resources.requests.cpu }}
+          limits:
+            memory: {{ .Values.resources.limits.memory }}
+            cpu: {{ .Values.resources.limits.cpu }}
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: {{ .Values.services.payments.port }}
+          initialDelaySeconds: 15
+          periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: payments-service
+  namespace: threadshop
+spec:
+  selector:
+    app: payments-service
+  ports:
+  - port: {{ .Values.services.payments.port }}
+    targetPort: {{ .Values.services.payments.port }}
+  type: ClusterIP
+
+---
+# ── FRONTEND ───────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: threadshop
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+      - name: frontend
+        image: {{ $registry }}/frontend:{{ $tag }}
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            memory: {{ .Values.resources.requests.memory }}
+            cpu: {{ .Values.resources.requests.cpu }}
+          limits:
+            memory: {{ .Values.resources.limits.memory }}
+            cpu: {{ .Values.resources.limits.cpu }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  namespace: threadshop
+spec:
+  selector:
+    app: frontend
+  ports:
+  - port: 80
+    targetPort: 80
+  type: LoadBalancer

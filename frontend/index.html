@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>THREADSHOP — Modern Fashion</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0d0d0d;
+    --cream: #f5f0e8;
+    --sand: #e8dfc8;
+    --accent: #c8a96e;
+    --muted: #8a8070;
+    --white: #ffffff;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    color: var(--ink);
+    min-height: 100vh;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1.2rem 3rem;
+    background: rgba(245, 240, 232, 0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--sand);
+  }
+  .nav-logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.6rem;
+    letter-spacing: 0.15em;
+    color: var(--ink);
+  }
+  .nav-links { display: flex; gap: 2rem; align-items: center; }
+  .nav-links a {
+    font-size: 0.85rem; font-weight: 500; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--muted); cursor: pointer;
+    text-decoration: none; transition: color 0.2s;
+  }
+  .nav-links a:hover, .nav-links a.active { color: var(--ink); }
+  .cart-btn {
+    background: var(--ink); color: var(--white);
+    border: none; padding: 0.6rem 1.4rem;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.8rem; font-weight: 500; letter-spacing: 0.1em;
+    text-transform: uppercase; cursor: pointer;
+    transition: background 0.2s;
+  }
+  .cart-btn:hover { background: var(--accent); }
+
+  /* PAGES */
+  .page { display: none; padding-top: 80px; min-height: 100vh; }
+  .page.active { display: block; }
+
+  /* HERO */
+  .hero {
+    display: grid; grid-template-columns: 1fr 1fr;
+    min-height: calc(100vh - 80px);
+  }
+  .hero-text {
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 5rem 4rem;
+  }
+  .hero-eyebrow {
+    font-size: 0.75rem; font-weight: 500; letter-spacing: 0.2em;
+    text-transform: uppercase; color: var(--accent); margin-bottom: 1.5rem;
+  }
+  .hero-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(3rem, 5vw, 4.5rem); line-height: 1.1;
+    margin-bottom: 1.5rem;
+  }
+  .hero-title em { font-style: italic; color: var(--accent); }
+  .hero-desc {
+    font-size: 1rem; color: var(--muted); line-height: 1.7;
+    max-width: 380px; margin-bottom: 2.5rem;
+  }
+  .btn-primary {
+    display: inline-block; background: var(--ink); color: var(--white);
+    border: none; padding: 1rem 2.5rem;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem; font-weight: 500; letter-spacing: 0.12em;
+    text-transform: uppercase; cursor: pointer;
+    transition: all 0.3s; text-decoration: none;
+  }
+  .btn-primary:hover { background: var(--accent); transform: translateY(-2px); }
+  .hero-image {
+    background: var(--sand);
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden; position: relative;
+  }
+  .hero-image img {
+    width: 100%; height: 100%; object-fit: cover;
+    transition: transform 0.6s ease;
+  }
+  .hero-image:hover img { transform: scale(1.04); }
+
+  /* SHOP PAGE */
+  .shop-header {
+    padding: 3rem 3rem 1.5rem;
+    display: flex; align-items: flex-end; justify-content: space-between;
+    border-bottom: 1px solid var(--sand);
+  }
+  .shop-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.5rem;
+  }
+  .filters { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  .filter-btn {
+    padding: 0.4rem 1rem; border: 1px solid var(--sand);
+    background: transparent; font-family: 'DM Sans', sans-serif;
+    font-size: 0.78rem; letter-spacing: 0.08em;
+    text-transform: uppercase; cursor: pointer;
+    transition: all 0.2s; color: var(--muted);
+  }
+  .filter-btn:hover, .filter-btn.active {
+    background: var(--ink); color: var(--white); border-color: var(--ink);
+  }
+  .products-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 2px; padding: 2px;
+  }
+  .product-card {
+    background: var(--white); cursor: pointer;
+    transition: transform 0.25s;
+    position: relative; overflow: hidden;
+  }
+  .product-card:hover { transform: translateY(-4px); z-index: 1; }
+  .product-img {
+    aspect-ratio: 3/4; overflow: hidden;
+    background: var(--sand);
+  }
+  .product-img img {
+    width: 100%; height: 100%; object-fit: cover;
+    transition: transform 0.5s ease;
+  }
+  .product-card:hover .product-img img { transform: scale(1.06); }
+  .product-info { padding: 1.2rem; }
+  .product-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem; margin-bottom: 0.3rem;
+  }
+  .product-category {
+    font-size: 0.72rem; color: var(--muted);
+    letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.5rem;
+  }
+  .product-price { font-size: 1rem; font-weight: 500; color: var(--accent); }
+
+  /* MODAL */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(13,13,13,0.7); z-index: 200;
+    align-items: center; justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--white); max-width: 820px; width: 90%;
+    display: grid; grid-template-columns: 1fr 1fr;
+    max-height: 90vh; overflow: auto;
+  }
+  .modal-img { background: var(--sand); }
+  .modal-img img { width: 100%; height: 100%; object-fit: cover; }
+  .modal-body { padding: 2.5rem; display: flex; flex-direction: column; }
+  .modal-category {
+    font-size: 0.72rem; color: var(--accent);
+    letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 0.8rem;
+  }
+  .modal-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem; line-height: 1.2; margin-bottom: 0.5rem;
+  }
+  .modal-price { font-size: 1.4rem; font-weight: 500; color: var(--ink); margin-bottom: 1rem; }
+  .modal-desc { font-size: 0.9rem; color: var(--muted); line-height: 1.6; margin-bottom: 1.5rem; }
+  .size-label {
+    font-size: 0.75rem; font-weight: 500; letter-spacing: 0.1em;
+    text-transform: uppercase; margin-bottom: 0.6rem;
+  }
+  .sizes { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+  .size-chip {
+    width: 42px; height: 42px; display: flex; align-items: center;
+    justify-content: center; border: 1px solid var(--sand);
+    font-size: 0.8rem; cursor: pointer; transition: all 0.2s;
+  }
+  .size-chip:hover, .size-chip.selected {
+    background: var(--ink); color: var(--white); border-color: var(--ink);
+  }
+  .modal-actions { margin-top: auto; display: flex; flex-direction: column; gap: 0.8rem; }
+  .btn-close {
+    position: absolute; top: 1rem; right: 1rem;
+    background: none; border: none; font-size: 1.5rem; cursor: pointer;
+    color: var(--ink); z-index: 210;
+  }
+
+  /* CART PAGE */
+  .cart-container { max-width: 900px; margin: 0 auto; padding: 3rem; }
+  .cart-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.5rem; margin-bottom: 2rem;
+  }
+  .cart-item {
+    display: grid; grid-template-columns: 80px 1fr auto;
+    gap: 1.2rem; align-items: center;
+    padding: 1.2rem 0; border-bottom: 1px solid var(--sand);
+  }
+  .cart-item-img { width: 80px; height: 100px; object-fit: cover; background: var(--sand); }
+  .cart-item-name { font-family: 'Playfair Display', serif; font-size: 1rem; }
+  .cart-item-meta { font-size: 0.8rem; color: var(--muted); margin-top: 0.3rem; }
+  .cart-item-price { font-weight: 500; font-size: 1rem; }
+  .remove-btn {
+    background: none; border: none; cursor: pointer;
+    color: var(--muted); font-size: 1.2rem; margin-top: 0.5rem;
+  }
+  .cart-summary {
+    padding: 2rem 0; display: flex;
+    justify-content: space-between; align-items: center;
+  }
+  .cart-total {
+    font-family: 'Playfair Display', serif; font-size: 1.5rem;
+  }
+  .empty-cart {
+    text-align: center; padding: 5rem 0; color: var(--muted);
+  }
+  .empty-cart p { font-size: 1.1rem; margin-bottom: 1.5rem; }
+
+  /* AUTH PAGE */
+  .auth-container {
+    max-width: 420px; margin: 0 auto;
+    padding: 4rem 2rem; min-height: calc(100vh - 80px);
+    display: flex; flex-direction: column; justify-content: center;
+  }
+  .auth-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem; margin-bottom: 0.5rem;
+  }
+  .auth-subtitle { color: var(--muted); margin-bottom: 2rem; }
+  .form-group { margin-bottom: 1.2rem; }
+  .form-group label {
+    display: block; font-size: 0.75rem; font-weight: 500;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    margin-bottom: 0.4rem; color: var(--muted);
+  }
+  .form-group input {
+    width: 100%; padding: 0.85rem 1rem;
+    border: 1px solid var(--sand); background: var(--white);
+    font-family: 'DM Sans', sans-serif; font-size: 0.95rem;
+    outline: none; transition: border-color 0.2s;
+  }
+  .form-group input:focus { border-color: var(--ink); }
+  .auth-switch {
+    margin-top: 1.5rem; font-size: 0.85rem; color: var(--muted);
+  }
+  .auth-switch span { color: var(--ink); cursor: pointer; font-weight: 500; }
+  .msg { padding: 0.8rem 1rem; margin-bottom: 1rem; font-size: 0.85rem; }
+  .msg.error { background: #fee2e2; color: #b91c1c; }
+  .msg.success { background: #dcfce7; color: #166534; }
+
+  /* ORDERS PAGE */
+  .orders-container { max-width: 800px; margin: 0 auto; padding: 3rem; }
+  .order-card {
+    border: 1px solid var(--sand); padding: 1.5rem;
+    margin-bottom: 1.2rem; background: var(--white);
+  }
+  .order-header { display: flex; justify-content: space-between; margin-bottom: 1rem; }
+  .order-id { font-family: 'Playfair Display', serif; }
+  .order-status {
+    padding: 0.3rem 0.8rem; font-size: 0.75rem;
+    font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase;
+  }
+  .status-confirmed { background: #dcfce7; color: #166534; }
+  .status-failed { background: #fee2e2; color: #b91c1c; }
+  .status-pending { background: #fef9c3; color: #854d0e; }
+
+  /* CHECKOUT */
+  .checkout-container { max-width: 600px; margin: 0 auto; padding: 3rem; }
+
+  /* LOADING */
+  .loading {
+    display: flex; align-items: center; justify-content: center;
+    padding: 4rem; color: var(--muted); gap: 0.8rem;
+  }
+  .spinner {
+    width: 24px; height: 24px; border: 2px solid var(--sand);
+    border-top-color: var(--ink); border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  @media (max-width: 768px) {
+    nav { padding: 1rem 1.5rem; }
+    .hero { grid-template-columns: 1fr; }
+    .hero-image { min-height: 300px; }
+    .modal { grid-template-columns: 1fr; }
+    .modal-img { min-height: 240px; }
+    nav .nav-links a:not(.cart-btn) { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">THREADSHOP</div>
+  <div class="nav-links">
+    <a onclick="showPage('home')" id="nav-home" class="active">Home</a>
+    <a onclick="showPage('shop')" id="nav-shop">Shop</a>
+    <a onclick="showPage('orders')" id="nav-orders">Orders</a>
+    <a onclick="showPage('auth')" id="nav-auth">Account</a>
+    <button class="cart-btn" onclick="showPage('cart')">Cart (<span id="cart-count">0</span>)</button>
+  </div>
+</nav>
+
+<!-- HOME -->
+<div class="page active" id="page-home">
+  <div class="hero">
+    <div class="hero-text">
+      <div class="hero-eyebrow">New Collection 2025</div>
+      <h1 class="hero-title">Wear Your <em>Story</em></h1>
+      <p class="hero-desc">Curated fashion for the modern individual. Every piece tells a story, every outfit defines a moment.</p>
+      <button class="btn-primary" onclick="showPage('shop')">Shop Collection</button>
+    </div>
+    <div class="hero-image">
+      <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800" alt="Fashion">
+    </div>
+  </div>
+</div>
+
+<!-- SHOP -->
+<div class="page" id="page-shop">
+  <div class="shop-header">
+    <h2 class="shop-title">Collection</h2>
+    <div class="filters">
+      <button class="filter-btn active" onclick="filterProducts('all', this)">All</button>
+      <button class="filter-btn" onclick="filterProducts('shirts', this)">Shirts</button>
+      <button class="filter-btn" onclick="filterProducts('pants', this)">Pants</button>
+      <button class="filter-btn" onclick="filterProducts('dresses', this)">Dresses</button>
+      <button class="filter-btn" onclick="filterProducts('accessories', this)">Accessories</button>
+      <button class="filter-btn" onclick="filterProducts('shoes', this)">Shoes</button>
+    </div>
+  </div>
+  <div id="products-grid" class="products-grid"></div>
+</div>
+
+<!-- CART -->
+<div class="page" id="page-cart">
+  <div class="cart-container">
+    <h2 class="cart-title">Your Cart</h2>
+    <div id="cart-items-list"></div>
+    <div id="cart-summary"></div>
+  </div>
+</div>
+
+<!-- AUTH -->
+<div class="page" id="page-auth">
+  <div class="auth-container">
+    <div id="login-form">
+      <h2 class="auth-title">Welcome back</h2>
+      <p class="auth-subtitle">Sign in to your account</p>
+      <div id="auth-msg"></div>
+      <div class="form-group"><label>Email</label><input type="email" id="login-email" placeholder="your@email.com"></div>
+      <div class="form-group"><label>Password</label><input type="password" id="login-password" placeholder="••••••••"></div>
+      <button class="btn-primary" style="width:100%" onclick="login()">Sign In</button>
+      <p class="auth-switch">Don't have an account? <span onclick="toggleAuth()">Register</span></p>
+    </div>
+    <div id="register-form" style="display:none">
+      <h2 class="auth-title">Create Account</h2>
+      <p class="auth-subtitle">Join ThreadShop today</p>
+      <div id="auth-msg-reg"></div>
+      <div class="form-group"><label>Name</label><input type="text" id="reg-name" placeholder="Your name"></div>
+      <div class="form-group"><label>Email</label><input type="email" id="reg-email" placeholder="your@email.com"></div>
+      <div class="form-group"><label>Password</label><input type="password" id="reg-password" placeholder="••••••••"></div>
+      <button class="btn-primary" style="width:100%" onclick="register()">Create Account</button>
+      <p class="auth-switch">Already have an account? <span onclick="toggleAuth()">Sign In</span></p>
+    </div>
+    <div id="profile-section" style="display:none">
+      <h2 class="auth-title">My Account</h2>
+      <p id="profile-name" style="font-size:1.1rem;margin-bottom:0.3rem"></p>
+      <p id="profile-email" style="color:var(--muted);margin-bottom:2rem"></p>
+      <button class="btn-primary" onclick="logout()">Sign Out</button>
+    </div>
+  </div>
+</div>
+
+<!-- ORDERS -->
+<div class="page" id="page-orders">
+  <div class="orders-container">
+    <h2 class="cart-title">My Orders</h2>
+    <div id="orders-list"></div>
+  </div>
+</div>
+
+<!-- CHECKOUT -->
+<div class="page" id="page-checkout">
+  <div class="checkout-container">
+    <h2 class="cart-title">Checkout</h2>
+    <div id="checkout-msg"></div>
+    <h3 style="font-family:'Playfair Display',serif;margin-bottom:1rem">Shipping Address</h3>
+    <div class="form-group"><label>Full Name</label><input type="text" id="ship-name"></div>
+    <div class="form-group"><label>Address</label><input type="text" id="ship-address"></div>
+    <div class="form-group"><label>City</label><input type="text" id="ship-city"></div>
+    <h3 style="font-family:'Playfair Display',serif;margin:1.5rem 0 1rem">Payment (Mock)</h3>
+    <p style="font-size:0.8rem;color:var(--muted);margin-bottom:1rem">💡 Use a card starting with <strong>4</strong> for approval, any other number for decline</p>
+    <div class="form-group"><label>Card Number</label><input type="text" id="card-number" placeholder="4111111111111111" maxlength="16"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+      <div class="form-group"><label>Expiry</label><input type="text" placeholder="MM/YY" maxlength="5"></div>
+      <div class="form-group"><label>CVV</label><input type="text" placeholder="123" maxlength="3"></div>
+    </div>
+    <div id="order-total-display" style="font-size:1.3rem;font-weight:500;margin:1rem 0"></div>
+    <button class="btn-primary" style="width:100%" onclick="placeOrder()">Place Order</button>
+    <br><br>
+    <a style="cursor:pointer;color:var(--muted);font-size:0.85rem" onclick="showPage('cart')">← Back to cart</a>
+  </div>
+</div>
+
+<!-- Product Modal -->
+<div class="modal-overlay" id="product-modal">
+  <button class="btn-close" onclick="closeModal()">×</button>
+  <div class="modal">
+    <div class="modal-img"><img id="modal-img" src="" alt=""></div>
+    <div class="modal-body">
+      <div class="modal-category" id="modal-category"></div>
+      <h2 class="modal-name" id="modal-name"></h2>
+      <div class="modal-price" id="modal-price"></div>
+      <p class="modal-desc" id="modal-desc"></p>
+      <div class="size-label">Select Size</div>
+      <div class="sizes" id="modal-sizes"></div>
+      <div class="modal-actions">
+        <button class="btn-primary" onclick="addToCart()">Add to Cart</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const USERS_URL = window.ENV_USERS_URL || 'http://localhost:3001';
+  const CATALOG_URL = window.ENV_CATALOG_URL || 'http://localhost:3002';
+  const PAYMENTS_URL = window.ENV_PAYMENTS_URL || 'http://localhost:3003';
+
+  let currentProduct = null;
+  let selectedSize = null;
+  let cart = [];
+  let user = JSON.parse(localStorage.getItem('ts_user') || 'null');
+  let token = localStorage.getItem('ts_token') || null;
+
+  // PAGE ROUTING
+  function showPage(name) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+    document.getElementById('page-' + name).classList.add('active');
+    const navEl = document.getElementById('nav-' + name);
+    if (navEl) navEl.classList.add('active');
+
+    if (name === 'shop') loadProducts();
+    if (name === 'cart') renderCart();
+    if (name === 'auth') renderAuth();
+    if (name === 'orders') loadOrders();
+  }
+
+  // PRODUCTS
+  let allProducts = [];
+  async function loadProducts() {
+    const grid = document.getElementById('products-grid');
+    grid.innerHTML = '<div class="loading"><div class="spinner"></div> Loading collection...</div>';
+    try {
+      const res = await fetch(`${CATALOG_URL}/api/catalog/products`);
+      allProducts = await res.json();
+      renderProducts(allProducts);
+    } catch (e) {
+      grid.innerHTML = '<div class="loading">⚠️ Could not connect to catalog service</div>';
+    }
+  }
+
+  function renderProducts(products) {
+    const grid = document.getElementById('products-grid');
+    if (!products.length) {
+      grid.innerHTML = '<div class="loading">No products found</div>';
+      return;
+    }
+    grid.innerHTML = products.map(p => `
+      <div class="product-card" onclick="openProduct('${p._id}')">
+        <div class="product-img">
+          <img src="${p.imageUrl || 'https://images.unsplash.com/photo-1567401893414-76b7b1e5a7a5?w=400'}" alt="${p.name}" loading="lazy">
+        </div>
+        <div class="product-info">
+          <div class="product-category">${p.category}</div>
+          <div class="product-name">${p.name}</div>
+          <div class="product-price">$${p.price.toFixed(2)}</div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function filterProducts(cat, btn) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderProducts(cat === 'all' ? allProducts : allProducts.filter(p => p.category === cat));
+  }
+
+  function openProduct(id) {
+    const p = allProducts.find(x => x._id === id);
+    if (!p) return;
+    currentProduct = p;
+    selectedSize = null;
+    document.getElementById('modal-img').src = p.imageUrl || '';
+    document.getElementById('modal-category').textContent = p.category;
+    document.getElementById('modal-name').textContent = p.name;
+    document.getElementById('modal-price').textContent = `$${p.price.toFixed(2)}`;
+    document.getElementById('modal-desc').textContent = p.description || '';
+    document.getElementById('modal-sizes').innerHTML = p.sizes.map(s =>
+      `<div class="size-chip" onclick="selectSize('${s}', this)">${s}</div>`
+    ).join('');
+    document.getElementById('product-modal').classList.add('open');
+  }
+
+  function selectSize(size, el) {
+    document.querySelectorAll('.size-chip').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedSize = size;
+  }
+
+  function closeModal() {
+    document.getElementById('product-modal').classList.remove('open');
+  }
+
+  // CART
+  function addToCart() {
+    if (!currentProduct) return;
+    if (!selectedSize && currentProduct.sizes.length > 0) {
+      alert('Please select a size');
+      return;
+    }
+    const item = {
+      id: currentProduct._id + (selectedSize || ''),
+      productId: currentProduct._id,
+      productName: currentProduct.name,
+      price: currentProduct.price,
+      quantity: 1,
+      size: selectedSize,
+      imageUrl: currentProduct.imageUrl
+    };
+    const existing = cart.find(c => c.id === item.id);
+    if (existing) existing.quantity++;
+    else cart.push(item);
+    updateCartCount();
+    closeModal();
+    showToast('Added to cart ✓');
+  }
+
+  function updateCartCount() {
+    document.getElementById('cart-count').textContent = cart.reduce((s, i) => s + i.quantity, 0);
+  }
+
+  function renderCart() {
+    const list = document.getElementById('cart-items-list');
+    const summary = document.getElementById('cart-summary');
+    if (!cart.length) {
+      list.innerHTML = '<div class="empty-cart"><p>Your cart is empty</p><button class="btn-primary" onclick="showPage(\'shop\')">Continue Shopping</button></div>';
+      summary.innerHTML = '';
+      return;
+    }
+    list.innerHTML = cart.map(item => `
+      <div class="cart-item">
+        <img class="cart-item-img" src="${item.imageUrl}" alt="${item.productName}">
+        <div>
+          <div class="cart-item-name">${item.productName}</div>
+          <div class="cart-item-meta">Size: ${item.size || 'N/A'} · Qty: ${item.quantity}</div>
+          <button class="remove-btn" onclick="removeFromCart('${item.id}')">Remove</button>
+        </div>
+        <div class="cart-item-price">$${(item.price * item.quantity).toFixed(2)}</div>
+      </div>
+    `).join('');
+    const total = cart.reduce((s, i) => s + i.price * i.quantity, 0);
+    summary.innerHTML = `
+      <div class="cart-summary">
+        <div class="cart-total">Total: $${total.toFixed(2)}</div>
+        <button class="btn-primary" onclick="goCheckout()">Proceed to Checkout</button>
+      </div>
+    `;
+  }
+
+  function removeFromCart(id) {
+    cart = cart.filter(i => i.id !== id);
+    updateCartCount();
+    renderCart();
+  }
+
+  function goCheckout() {
+    if (!user) { showPage('auth'); showToast('Please sign in first'); return; }
+    const total = cart.reduce((s, i) => s + i.price * i.quantity, 0);
+    document.getElementById('order-total-display').textContent = `Order Total: $${total.toFixed(2)}`;
+    showPage('checkout');
+  }
+
+  async function placeOrder() {
+    const cardNumber = document.getElementById('card-number').value;
+    const shippingAddress = {
+      name: document.getElementById('ship-name').value,
+      address: document.getElementById('ship-address').value,
+      city: document.getElementById('ship-city').value,
+    };
+    if (!cardNumber) { showMsg('checkout-msg', 'Please enter card number', 'error'); return; }
+    try {
+      const res = await fetch(`${PAYMENTS_URL}/api/payments/checkout`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.id, items: cart, shippingAddress, cardNumber })
+      });
+      const data = await res.json();
+      if (data.order.payment_status === 'approved') {
+        cart = []; updateCartCount();
+        showMsg('checkout-msg', data.message, 'success');
+        setTimeout(() => showPage('orders'), 2000);
+      } else {
+        showMsg('checkout-msg', data.message, 'error');
+      }
+    } catch (e) {
+      showMsg('checkout-msg', 'Could not connect to payments service', 'error');
+    }
+  }
+
+  // AUTH
+  function renderAuth() {
+    if (user) {
+      document.getElementById('login-form').style.display = 'none';
+      document.getElementById('register-form').style.display = 'none';
+      document.getElementById('profile-section').style.display = 'block';
+      document.getElementById('profile-name').textContent = user.name;
+      document.getElementById('profile-email').textContent = user.email;
+    } else {
+      document.getElementById('login-form').style.display = 'block';
+      document.getElementById('register-form').style.display = 'none';
+      document.getElementById('profile-section').style.display = 'none';
+    }
+  }
+
+  function toggleAuth() {
+    const lf = document.getElementById('login-form');
+    const rf = document.getElementById('register-form');
+    lf.style.display = lf.style.display === 'none' ? 'block' : 'none';
+    rf.style.display = rf.style.display === 'none' ? 'block' : 'none';
+  }
+
+  async function login() {
+    const email = document.getElementById('login-email').value;
+    const password = document.getElementById('login-password').value;
+    try {
+      const res = await fetch(`${USERS_URL}/api/users/login`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      const data = await res.json();
+      if (!res.ok) { showMsg('auth-msg', data.error, 'error'); return; }
+      user = data.user; token = data.token;
+      localStorage.setItem('ts_user', JSON.stringify(user));
+      localStorage.setItem('ts_token', token);
+      renderAuth();
+      showToast('Welcome back, ' + user.name + '!');
+    } catch (e) {
+      showMsg('auth-msg', 'Could not connect to users service', 'error');
+    }
+  }
+
+  async function register() {
+    const name = document.getElementById('reg-name').value;
+    const email = document.getElementById('reg-email').value;
+    const password = document.getElementById('reg-password').value;
+    try {
+      const res = await fetch(`${USERS_URL}/api/users/register`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, password })
+      });
+      const data = await res.json();
+      if (!res.ok) { showMsg('auth-msg-reg', data.error, 'error'); return; }
+      user = data.user; token = data.token;
+      localStorage.setItem('ts_user', JSON.stringify(user));
+      localStorage.setItem('ts_token', token);
+      renderAuth();
+      showToast('Account created! Welcome, ' + user.name);
+    } catch (e) {
+      showMsg('auth-msg-reg', 'Could not connect to users service', 'error');
+    }
+  }
+
+  function logout() {
+    user = null; token = null;
+    localStorage.removeItem('ts_user');
+    localStorage.removeItem('ts_token');
+    renderAuth();
+    showPage('home');
+  }
+
+  // ORDERS
+  async function loadOrders() {
+    const list = document.getElementById('orders-list');
+    if (!user) {
+      list.innerHTML = '<p style="color:var(--muted)">Please <span style="color:var(--ink);cursor:pointer;font-weight:500" onclick="showPage(\'auth\')">sign in</span> to view orders</p>';
+      return;
+    }
+    list.innerHTML = '<div class="loading"><div class="spinner"></div> Loading orders...</div>';
+    try {
+      const res = await fetch(`${PAYMENTS_URL}/api/payments/orders/${user.id}`);
+      const orders = await res.json();
+      if (!orders.length) {
+        list.innerHTML = '<p style="color:var(--muted)">No orders yet. <span style="color:var(--ink);cursor:pointer;font-weight:500" onclick="showPage(\'shop\')">Start shopping!</span></p>';
+        return;
+      }
+      list.innerHTML = orders.map(o => `
+        <div class="order-card">
+          <div class="order-header">
+            <div class="order-id">Order #${o.id}</div>
+            <span class="order-status status-${o.status}">${o.status}</span>
+          </div>
+          <div style="font-size:0.85rem;color:var(--muted);margin-bottom:0.5rem">${new Date(o.created_at).toLocaleDateString()}</div>
+          <div style="font-weight:500">$${parseFloat(o.total).toFixed(2)}</div>
+        </div>
+      `).join('');
+    } catch (e) {
+      list.innerHTML = '<p style="color:var(--muted)">Could not load orders</p>';
+    }
+  }
+
+  // UTILS
+  function showMsg(id, text, type) {
+    const el = document.getElementById(id);
+    if (el) { el.className = 'msg ' + type; el.textContent = text; }
+  }
+
+  function showToast(msg) {
+    const t = document.createElement('div');
+    t.textContent = msg;
+    Object.assign(t.style, {
+      position: 'fixed', bottom: '2rem', right: '2rem',
+      background: 'var(--ink)', color: 'var(--white)',
+      padding: '0.8rem 1.5rem', fontSize: '0.85rem',
+      zIndex: '999', transition: 'opacity 0.5s'
+    });
+    document.body.appendChild(t);
+    setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 500); }, 2500);
+  }
+
+  document.getElementById('product-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+  });
+</script>
+</body>
+</html>
